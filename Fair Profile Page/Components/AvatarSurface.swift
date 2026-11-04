@@ -28,8 +28,8 @@ struct AvatarSurface: View {
             .opacity(isExpanded ? 1 : 0)
         
         LinearGradient(stops: [
-            .init(color: ProfilePalette.page.opacity(0), location: blurStart),
-            .init(color: ProfilePalette.page.opacity(0.45), location: min(blurStart + 0.2, 1)),
+            .init(color: ProfilePalette.page.opacity(0), location: blurStart + 0.2),
+            .init(color: ProfilePalette.page.opacity(0.45), location: min(blurStart + 0.3, 1)),
             .init(color: ProfilePalette.page, location: 1)
         ], startPoint: .top, endPoint: .bottom)
         .opacity(isExpanded ? 1 : 0)
@@ -37,7 +37,7 @@ struct AvatarSurface: View {
     
     private func fill(_ image: Image) -> some View {
         Color.clear
-            .overlay { image.resizable().scaledToFill() }
+            .overlay { image.resizable().scaledToFill().scaleEffect(1) }
             .clipped()
     }
 }
