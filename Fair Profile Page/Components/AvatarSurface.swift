@@ -12,12 +12,6 @@ struct AvatarSurface: View {
     let isExpanded: Bool
     let blurStart: CGFloat
     
-    init(isExpanded: Bool, blurStart: CGFloat, image: Image) {
-        self.isExpanded = isExpanded
-        self.blurStart = blurStart
-        self.image = image
-    }
-    
     var body: some View {
         fill(image)
         
@@ -57,7 +51,7 @@ struct AvatarSurface: View {
             let height = geo.size.width * 1.2
             let blurStart = (height - 170 - 60) / height
             
-            AvatarSurface(isExpanded: true, blurStart: blurStart, image: image)
+            AvatarSurface(image: image, isExpanded: true, blurStart: blurStart)
                 .frame(width: width, height: height)
         }
         .ignoresSafeArea(edges: .top)

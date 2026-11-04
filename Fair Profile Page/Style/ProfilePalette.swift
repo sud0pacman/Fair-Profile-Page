@@ -22,3 +22,9 @@ enum ProfilePalette {
     static let page = Color(red: 0.55, green: 0.32, blue: 0.86)
     static let pageTop = Color(red: 0.80, green: 0.38, blue: 0.86)
 }
+
+// MARK: - Animation
+
+extension Animation {
+    static let profileExpand = Animation.spring(response: 0.45, dampingFraction: 0.82)
+}

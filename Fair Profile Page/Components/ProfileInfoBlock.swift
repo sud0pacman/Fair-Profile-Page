@@ -29,11 +29,13 @@ struct ProfileInfoBlock: View {
                 .foregroundStyle(.white.opacity(0.65))
                 .padding(.top, 2)
 
-            HStack(spacing: 20) {
-                ActionButton(icon: "phone.fill", title: "call", isExpanded: isExpanded)
-                ActionButton(icon: "bell.fill", title: "mute", isExpanded: isExpanded)
-                ActionButton(icon: "magnifyingglass", title: "search", isExpanded: isExpanded)
-                ActionButton(icon: "ellipsis", title: "more", isExpanded: isExpanded)
+            GlassEffectContainer(spacing: 20) {
+                HStack(spacing: 20) {
+                    ActionButton(icon: "phone.fill", title: "call")
+                    ActionButton(icon: "bell.fill", title: "mute")
+                    ActionButton(icon: "magnifyingglass", title: "search")
+                    ActionButton(icon: "ellipsis", title: "more")
+                }
             }
             .padding(.top, 16)
         }

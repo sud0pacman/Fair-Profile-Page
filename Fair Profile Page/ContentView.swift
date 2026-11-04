@@ -7,112 +7,111 @@
 
 import SwiftUI
 
-struct ContentView: View {
-    
-    @State private var infoBlockHeight: CGFloat = 170
+struct ProfileHeaderView: View {
+    var avatar: Image = Image("avatar")
+    var name: String = "Alicia Brown"
+    var status: String = "last seen just now"
+
     @State private var isExpanded = false
-    @State private var scrollY: CGFloat = 0
-    
-    let image: Image = Image(.avatar)
-    
+    @State private var scrollY: CGFloat = 0          // > 0 overscroll, < 0 yuqoriga scroll
+    @State private var infoBlockHeight: CGFloat = 170
+
     var body: some View {
         GeometryReader { geo in
             let width = geo.size.width
             let topInset = geo.safeAreaInsets.top
-            
-            ZStack {
+
+            ZStack(alignment: .top) {
                 background
-                
+
                 ScrollView {
-                    VStack(alignment: .center, spacing: 16) {
-                        avatar(width: width, topInset: topInset)
+                    VStack(spacing: 16) {
+                        header(width: width, topInset: topInset)
                             .onGeometryChange(for: CGFloat.self) { proxy in
                                 proxy.frame(in: .named("scroll")).minY
                             } action: { y in
                                 handleScroll(y)
                             }
-                        
+
+                        ProfileInfoCard()
+                            .padding(.horizontal, 16)
+
+                        Spacer(minLength: 600)
                     }
-                    .frame(width: geo.size.width)
                 }
                 .coordinateSpace(name: "scroll")
                 .scrollIndicators(.hidden)
                 .ignoresSafeArea(edges: .top)
+
+                ProfileNavBar()
             }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: isExpanded)
     }
-    
+
+    // MARK: Scroll logic
+
     private func handleScroll(_ y: CGFloat) {
-        print("y: \(y)")
-        if y == scrollY {
-            return
-        }
-        
         scrollY = y
-        
-        if !isExpanded, y > 70 {
-            withAnimation {
-                isExpanded = true
-            }
-        } else if isExpanded, y < -24 {
-            withAnimation {
-                isExpanded = false
-            }
+        if !isExpanded, y > ProfileLayout.expandThreshold {
+            withAnimation(.profileExpand) { isExpanded = true }
+        } else if isExpanded, y < -ProfileLayout.collapseThreshold {
+            withAnimation(.profileExpand) { isExpanded = false }
         }
     }
-    
+
+    // MARK: Header
+
     @ViewBuilder
-    private func avatar(width: CGFloat, topInset: CGFloat) -> some View {
-        let expandedHeight = width * 1.2
-        
-        // circleSize = avatarSize * (1 + (nechaFoizScroll * scale))
-        let overScroll = max(scrollY, 0)
-        let pull = overScroll / 70
-        let circleSize = 100 * (1 + (pull * 0.15))
-        
-        let avatarRect = isExpanded ? CGRect(x: 0, y: 0, width: width, height: expandedHeight)
-        : CGRect(x: (width - circleSize) / 2, y: topInset + ProfileLayout.avatarTop, width: circleSize, height: circleSize)
-        
-        let cornerRadius = isExpanded ? 0 : circleSize / 2
-        
+    private func header(width: CGFloat, topInset: CGFloat) -> some View {
+        let overscroll = max(scrollY, 0)
+        let expandedHeight = width * ProfileLayout.expandedAspect
+
+        // Collapsed: tortilganda avatar biroz kattalashadi
+        let pull = min(overscroll / ProfileLayout.expandThreshold, 1)
+        let circleSize = ProfileLayout.avatarSize * (1 + pull * ProfileLayout.pullScale)
+
+        // Avatar frame (ikki holat orasida spring interpolyatsiya qiladi)
+        let avatarRect: CGRect = isExpanded
+            ? CGRect(x: 0, y: 0, width: width, height: expandedHeight)
+            : CGRect(x: (width - circleSize) / 2, y: topInset + ProfileLayout.avatarTop,
+                     width: circleSize, height: circleSize)
+
+        let cornerRadius: CGFloat = isExpanded ? 0 : circleSize / 2
+
+        // Ism + status + buttonlar bloki joyi
         let infoTop: CGFloat = isExpanded
-            ? expandedHeight - infoBlockHeight - 14
-        : topInset + ProfileLayout.avatarTop + circleSize + ProfileLayout.avatarToInfo
-        
-        let blurStart = (avatarRect.height - infoBlockHeight) / max(avatarRect.height, 1)
-        
+            ? expandedHeight - infoBlockHeight - 14              // rasm ustida, pastda
+            : topInset + ProfileLayout.avatarTop + circleSize + ProfileLayout.avatarToInfo
+
+        let headerHeight: CGFloat = isExpanded
+            ? expandedHeight
+            : infoTop + infoBlockHeight + 4
+
+        // Blur rasmning qayeridan boshlanishi (info blokidan biroz yuqorida)
+        let blurStart = max(0, (avatarRect.height - infoBlockHeight - 60) / max(avatarRect.height, 1))
+
         ZStack(alignment: .topLeading) {
             AvatarSurface(
+                image: avatar,
                 isExpanded: isExpanded,
-                blurStart: blurStart,
-                image: image
+                blurStart: blurStart
             )
             .frame(width: avatarRect.width, height: avatarRect.height)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .offset(x: avatarRect.minX, y: avatarRect.minY)
             .onTapGesture {
-                withAnimation {
-                    isExpanded = !isExpanded
-                }
+                withAnimation(.profileExpand) { isExpanded.toggle() }
             }
-            
-            ProfileInfoBlock(
-                name: "Muhammad",
-                status: "last seen just now",
-                isExpanded: isExpanded
-            )
-            .frame(width: width)
-            .onGeometryChange(for: CGFloat.self) { proxy in
-                proxy.size.height
-            } action: { newValue in
-                infoBlockHeight = newValue
-            }
-            .offset(y: infoTop)
-            
+
+            ProfileInfoBlock(name: name, status: status, isExpanded: isExpanded)
+                .frame(width: width)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { infoBlockHeight = $0 }
+                .offset(y: infoTop)
         }
+        .frame(width: width, height: headerHeight, alignment: .topLeading)
     }
-    
+
     private var background: some View {
         LinearGradient(colors: [ProfilePalette.pageTop, ProfilePalette.page],
                        startPoint: .top, endPoint: .init(x: 0.5, y: 0.45))
@@ -121,6 +120,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ProfileHeaderView()
 }
-

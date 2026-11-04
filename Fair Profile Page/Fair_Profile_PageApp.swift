@@ -11,7 +11,7 @@ import SwiftUI
 struct Fair_Profile_PageApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ProfileHeaderView()
         }
     }
 }
