@@ -9,15 +9,20 @@ import SwiftUI
 
 struct ContentView: View {
     
+    @State private var infoBlockHeight: CGFloat = 170
     @State private var isExpanded = false
     @State private var scrollY: CGFloat = 0
+    
+    let image: Image = Image(.avatar)
     
     var body: some View {
         GeometryReader { geo in
             let width = geo.size.width
             let topInset = geo.safeAreaInsets.top
             
-            VStack {
+            ZStack {
+                background
+                
                 ScrollView {
                     VStack(alignment: .center, spacing: 16) {
                         avatar(width: width, topInset: topInset)
@@ -67,13 +72,22 @@ struct ContentView: View {
         let circleSize = 100 * (1 + (pull * 0.15))
         
         let avatarRect = isExpanded ? CGRect(x: 0, y: 0, width: width, height: expandedHeight)
-            : CGRect(x: 0, y: topInset + 8, width: circleSize, height: circleSize)
+        : CGRect(x: (width - circleSize) / 2, y: topInset + ProfileLayout.avatarTop, width: circleSize, height: circleSize)
         
         let cornerRadius = isExpanded ? 0 : circleSize / 2
         
-        Image(.avatar)
-            .resizable()
-            .scaledToFill()
+        let infoTop: CGFloat = isExpanded
+            ? expandedHeight - infoBlockHeight - 14
+        : topInset + ProfileLayout.avatarTop + circleSize + ProfileLayout.avatarToInfo
+        
+        let blurStart = (avatarRect.height - infoBlockHeight) / max(avatarRect.height, 1)
+        
+        ZStack(alignment: .topLeading) {
+            AvatarSurface(
+                isExpanded: isExpanded,
+                blurStart: blurStart,
+                image: image
+            )
             .frame(width: avatarRect.width, height: avatarRect.height)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .offset(x: avatarRect.minX, y: avatarRect.minY)
@@ -82,6 +96,27 @@ struct ContentView: View {
                     isExpanded = !isExpanded
                 }
             }
+            
+            ProfileInfoBlock(
+                name: "Muhammad",
+                status: "last seen just now",
+                isExpanded: isExpanded
+            )
+            .frame(width: width)
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.size.height
+            } action: { newValue in
+                infoBlockHeight = newValue
+            }
+            .offset(y: infoTop)
+            
+        }
+    }
+    
+    private var background: some View {
+        LinearGradient(colors: [ProfilePalette.pageTop, ProfilePalette.page],
+                       startPoint: .top, endPoint: .init(x: 0.5, y: 0.45))
+            .ignoresSafeArea()
     }
 }
 
