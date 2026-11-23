@@ -31,10 +31,10 @@ struct ProfileInfoBlock: View {
 
             GlassEffectContainer(spacing: 20) {
                 HStack(spacing: 20) {
-                    ActionButton(icon: "phone.fill", title: "call")
-                    ActionButton(icon: "bell.fill", title: "mute")
-                    ActionButton(icon: "magnifyingglass", title: "search")
-                    ActionButton(icon: "ellipsis", title: "more")
+                    ActionButton(icon: "phone.fill", title: "Call")
+                    ActionButton(icon: "bell.fill", title: "Mute")
+                    ActionButton(icon: "magnifyingglass", title: "Search")
+                    ActionButton(icon: "ellipsis", title: "More")
                 }
             }
             .padding(.top, 16)
