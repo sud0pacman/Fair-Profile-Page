@@ -8,13 +8,36 @@
 import SwiftUI
 
 struct ProfileHeaderView: View {
-    var avatar: Image = Image("avatar")
+    let avatar: UIImage
     var name: String = "Alicia Brown"
     var status: String = "last seen just now"
 
     @State private var isExpanded = false
     @State private var scrollY: CGFloat = 0          // > 0 overscroll, < 0 yuqoriga scroll
     @State private var infoBlockHeight: CGFloat = 170
+    @State private var selectedImageID: AppImage.ID?
+    @State private var appImageList: [AppImage]
+    
+    let uiImages = [
+        UIImage(named: "avatar"),
+        UIImage(named: "avatar2")
+    ]
+    
+    init(avatar: UIImage = UIImage(named: "avatar2") ?? UIImage(),
+         name: String = "Alicia Brown",
+         status: String = "last seen just now") {
+        self.avatar = uiImages.first! ?? UIImage()
+        self.name = name
+        self.status = status
+        
+        let list = uiImages.map { uiImage in
+            let uiImg = uiImage ?? UIImage()
+            return AppImage(image: Image(uiImage: uiImg),
+                            avatarPalatte: AvatarPalette(image: uiImg))
+        }
+        _appImageList = State(initialValue: list)
+        _selectedImageID = State(initialValue: list.first?.id)
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -93,7 +116,8 @@ struct ProfileHeaderView: View {
 
         ZStack(alignment: .topLeading) {
             AvatarSurface(
-                image: avatar,
+                images: appImageList,
+                selection: $selectedImageID,
                 isExpanded: isExpanded,
                 blurStart: blurStart
             )
@@ -111,11 +135,21 @@ struct ProfileHeaderView: View {
         }
         .frame(width: width, height: headerHeight, alignment: .topLeading)
     }
+    
+    /// Hozir ko'rinib turgan rasm
+    private var selectedImage: AppImage? {
+        appImageList.first { $0.id == selectedImageID }
+    }
+    
+    private var palette: AvatarPalette {
+        selectedImage?.avatarPalatte ?? .fallback
+    }
 
     private var background: some View {
-        LinearGradient(colors: [ProfilePalette.pageTop, ProfilePalette.page],
+        LinearGradient(colors: [palette.pageTop, palette.page],
                        startPoint: .top, endPoint: .init(x: 0.5, y: 0.45))
             .ignoresSafeArea()
+            .animation(.easeInOut(duration: 0.3), value: selectedImageID)
     }
 }
 
