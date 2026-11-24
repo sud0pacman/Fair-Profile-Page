@@ -119,7 +119,8 @@ struct ProfileHeaderView: View {
                 images: appImageList,
                 selection: $selectedImageID,
                 isExpanded: isExpanded,
-                blurStart: blurStart
+                blurStart: blurStart,
+                topInset: topInset
             )
             .frame(width: avatarRect.width, height: avatarRect.height)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
